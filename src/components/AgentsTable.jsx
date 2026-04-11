@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { socket } from "../services/socket";
 
-export default function AgentsTable({ onSelect, selected, mode = "navigate" }) {
+export default function AgentsTable({ onSelect, selected, mode = "navigate", vulnerabilities = [] }) {
   const [agents, setAgents] = useState([]);
   const [usnCounts, setUsnCounts] = useState({});
   const navigate = useNavigate();
@@ -90,7 +90,7 @@ export default function AgentsTable({ onSelect, selected, mode = "navigate" }) {
                 </span>
               </td>
               <td>{agent.lastSeen ? new Date(agent.lastSeen).toLocaleString() : "—"}</td>
-              <td>{usnCounts[agent.id] || 0}</td>
+              <td>{vulnerabilities.find(v => v.agent.id === agent.id)?.vulnerableUSNs.length ?? usnCounts[agent.id] ?? 0}</td>
               <td>
                 <button className="btn btn-sm btn-primary" onClick={(e) => { e.stopPropagation(); sendHeartbeat(agent.id); }}>
                   Ping

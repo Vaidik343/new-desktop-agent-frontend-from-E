@@ -1,12 +1,14 @@
 import { runBaseline } from "./baseline.js";
-import { watchFolders } from "./watcher.js"; 
+import { watchFolders } from "./watcher.js";
 
-async function startAgent(agent) {
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:7000';
+
+export async function startAgent(agent) {
   const agentId = agent.id;
   console.log("Using agent:", agentId);
 
   // 1. Send heartbeat
-  await fetch("http://localhost:7000/api/agents/heartbeat", {
+  await fetch(`${BACKEND_URL}/api/agents/heartbeat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ agentId, status: "active" })
@@ -14,7 +16,7 @@ async function startAgent(agent) {
   console.log(`Heartbeat sent for agent ${agentId}`);
 
   // 2. Fetch all policies
-  const policyRes = await fetch("http://localhost:7000/api/policies");
+  const policyRes = await fetch(`${BACKEND_URL}/api/policies`);
   const policies = await policyRes.json();
 
   // 2.1. Filter policies for this agent

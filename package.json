@@ -7,7 +7,7 @@
   "scripts": {
     "electron": "electron ./main.cjs",
     "start-electron": "electron ./main.cjs",
-    "dev": "cross-env NODE_ENV=development concurrently \"vite\" \"electron ./main.cjs\" \"node src/agent/startAgent.js\"",
+    "dev": "cross-env NODE_ENV=development concurrently \"vite\" \"electron ./main.cjs\" \"node src/agent/agentMain.js\"",
     "build": "vite build && cross-env NODE_ENV=production electron-builder"
   },
   "dependencies": {

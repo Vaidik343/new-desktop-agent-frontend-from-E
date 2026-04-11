@@ -72,6 +72,13 @@ app.whenReady().then(() => {
   const agentLauncher = new AutoLaunch({ name: "Desktop Agent" });
   agentLauncher.enable();
 
+  // Start the background agent
+  import('./src/agent/agentMain.js').then(() => {
+    console.log('Background agent started.');
+  }).catch(err => {
+    console.error('Failed to start background agent:', err);
+  });
+
   new Notification({
     title: "Agent",
     body: "Agent has started and is running in background.",

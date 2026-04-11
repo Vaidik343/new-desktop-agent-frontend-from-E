@@ -5,6 +5,8 @@ import fetch from "node-fetch";
 import notifier from "node-notifier";
 import fs from "fs";
 
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:7000';
+
 function waitForFileUnlock(filePath, timeout = 5000) {
   return new Promise((resolve, reject) => {
     const start = Date.now();
@@ -50,11 +52,11 @@ function isExtensionAllowed(filePath, allowed = [], forbidden = []) {
   if (forbidden.includes(ext)) return false;
   if (allowed.length > 0 && !allowed.includes(ext)) return false;
   return true;
-} 
+}
 
 async function sendActivity(agentId, filePath, action) {
   try {
-    const res = await fetch("http://localhost:7000/api/activity", {
+    const res = await fetch(`${BACKEND_URL}/api/activity`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -74,7 +76,7 @@ async function sendActivity(agentId, filePath, action) {
 
 async function getAgentName(agentId) {
   try {
-    const res = await fetch(`http://localhost:7000/api/agents/${agentId}`);
+    const res = await fetch(`${BACKEND_URL}/api/agents/${agentId}`);
     const agent = await res.json();
     return agent.name || agentId;
   } catch (err) {
@@ -86,7 +88,12 @@ async function getAgentName(agentId) {
 export async function watchFolders(agentId, folders, allowedExtensions, forbiddenExtensions, blockedExtensions) {
   const agentName = await getAgentName(agentId);
 
-  folders.forEach(folder => {
+  const uniqueFolders = Array.from(new Set(folders.map(folder => path.resolve(folder))));
+  if (uniqueFolders.length !== folders.length) {
+    console.log("Deduplicated watched folders:", uniqueFolders);
+  }
+
+  uniqueFolders.forEach(folder => {
     console.log("Watching folder:", folder);
 
     const watcher = chokidar.watch(folder, { ignoreInitial: true });
@@ -97,15 +104,15 @@ export async function watchFolders(agentId, folders, allowedExtensions, forbidde
       const ext = path.extname(filePath).toLowerCase();
 
       // 1️⃣ BLOCKED EXTENSIONS → DELETE IMMEDIATELY
-     if (blockedExtensions.includes(ext)) {
-  console.log("⛔ BLOCKED EXTENSION → Deleting:", filePath);
+      if (blockedExtensions.includes(ext)) {
+        console.log("⛔ BLOCKED EXTENSION → Deleting:", filePath);
 
   try {
      await waitForFileUnlock(filePath); 
     await deleteFileWithRetry(filePath); // <— FIXED HERE
     console.log("🗑️ File deleted:", filePath);
 
-    await fetch("http://localhost:7000/api/violations", {
+    await fetch(`${BACKEND_URL}/api/violations`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -134,7 +141,7 @@ export async function watchFolders(agentId, folders, allowedExtensions, forbidde
         console.log("⚠️ Forbidden extension:", filePath);
 
         try {
-          await fetch("http://localhost:7000/api/violations", {
+          await fetch(`${BACKEND_URL}/api/violations`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

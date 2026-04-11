@@ -5,6 +5,8 @@ import sqlite3 from "sqlite3";
 import fetch from "node-fetch";
 import db from "./db.js";
 
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:7000';
+
 
 
 function hashFile(filePath) {
@@ -47,7 +49,7 @@ async function sendBaseline(agentId, files) {
   const chunkSize = 100;
   for (let i = 0; i < files.length; i += chunkSize) {
     const chunk = files.slice(i, i + chunkSize);
-    await fetch("http://localhost:7000/api/files/upsert", {
+    await fetch(`${BACKEND_URL}/api/files/upsert`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ agentId, files: chunk })

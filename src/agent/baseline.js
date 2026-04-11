@@ -1,8 +1,10 @@
 import { scanFolder, sendBaseline } from "./agent.js";
 import db from "./db.js";
 
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:7000';
+
 export async function runBaseline(agentId) {
- const res = await fetch(`http://localhost:7000/api/policies/${agentId}`);
+ const res = await fetch(`${BACKEND_URL}/api/policies/${agentId}`);
 if (!res.ok) {
   throw new Error(`Failed to fetch policy: ${res.status} ${res.statusText}`);
 }
